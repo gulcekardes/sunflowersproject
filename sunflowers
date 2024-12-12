@@ -122,14 +122,6 @@ Fixpoint gate_count {d: nat} (c: AC0_circuit d) : nat :=
       fold_left (fun acc c' => acc + gate_count c') inputs 0
   end.
 
-(* Count number of literals in circuit. *)
-Fixpoint literal_count {d: nat} (c: AC0_circuit d) : nat :=
-  match c with
-  | Literal _ => 1  (* Count this literal *)
-  | Gate _ _ inputs => 
-      fold_left (fun acc c' => acc + literal_count c') inputs 0
-  end.
-
 Definition gate_type_eq (g1 g2: gate_type) : bool :=
   match g1, g2 with
   | AND_gate, AND_gate => true
@@ -309,6 +301,11 @@ then after removing Y from each petal, we get h+1 disjoint sets
 Any cover of FY must hit each of these disjoint sets
 Therefore \tau(FY) must be at least h. *)
 
+Lemma in_set_union : forall (x : nat) (A B : list nat),
+  In x (set_union A B) <-> In x A \/ In x B.
+Proof.
+Admitted.
+
 Lemma in_set_inter: forall x X Y,
   In x (set_inter X Y) <-> In x X /\ In x Y.
 Proof.
@@ -376,10 +373,6 @@ Proof.
             * right. simpl in Hlen. destruct petals'.
               -- simpl in Hlen. 
 Admitted.
-      
- (* Third goal: about subset_bool *)
-(* Show that if the set family F has a sunflower implies tau \geq k,
-and this implies that the core Y is a lower (k-1) limit for F. *)
 
 (* Below is the work on sunflowers.
 Erdos Rado sunflower theorem's proof is by induction and also uses an
@@ -416,7 +409,6 @@ Definition is_maximal_disjoint (A F: list (list nat)) : Prop :=
 Axiom exists_maximal_disjoint: forall F,
   exists A, is_maximal_disjoint A F.
 
-(* First let's add this helper lemma for counting occurrences *)
 Definition count_occurrences (x: nat) (F: list (list nat)) : nat :=
   length (filter (fun X => if in_dec nat_eq_dec x X then true else false) F).
 
@@ -427,9 +419,7 @@ Lemma pigeonhole_for_sets:
   exists x, In x B /\ 
     count_occurrences x F > length F / length B.
 Proof.
-Admitted.  (* We'll admit this for now *)
-
-(* Basic set theory definitions *)
+Admitted. 
 
 Lemma set_eq_intro: forall (X Y: list nat),
   (forall x, In x X <-> In x Y) -> set_eq X Y.
@@ -581,11 +571,6 @@ Proof.
   rewrite Heq.
   reflexivity.
 Qed.
-
-Lemma in_set_union : forall (x : nat) (A B : list nat),
-  In x (set_union A B) <-> In x A \/ In x B.
-Proof.
-Admitted.
 
 Lemma set_minus_union_lemma: forall (X Y Z: list nat) (z: nat),
   In z (set_minus (set_union X Z) (set_union Y Z)) ->
@@ -906,6 +891,8 @@ Lemma circuit_separation_p_plus: forall m k l A B (c: Pi3_circuit l),
   (forall x, A x -> eval_Pi3 c x = true) ->
   (forall x, B x -> eval_Pi3 c x = false) ->
   ~ property_P_plus m A B k l.
+Proof.
+Admitted.
 
 Fixpoint fact (n: nat) : nat :=
   match n with
@@ -920,6 +907,8 @@ Lemma parity_sunflower: forall n s h F,
   (forall X, In X F -> length X = s) ->
   exists Y, is_sunflower F Y (S h) /\
            (if Nat.even s then Odd (length Y) else Even (length Y)).
+Proof.
+Admitted.
 
 (* === Main Theorem === *)
 
@@ -1013,13 +1002,62 @@ Definition is_bounded_fanin {k: nat} (c: Pi3_circuit k) (bound: nat) : Prop :=
       end
   end.
 
+Definition is_bad_gate_bool {d: nat} (g: AC0_circuit d) (k: nat) : bool :=
+  match g with
+  | Literal _ => false
+  | Gate _ _ inputs => Nat.ltb k (length inputs)  (* k < length inputs *)
+  end.
+
+(* First define how to get literals from a circuit *)
+Fixpoint get_literals {d: nat} (c: AC0_circuit d) : list literal :=
+  match c with
+  | Literal l => [l]
+  | Gate _ _ inputs => flat_map get_literals inputs
+  end.
+
+Definition bad_gates_inputs {d: nat} (k: nat) (g: AC0_circuit d) : list (list nat) :=
+  match g with
+  | Literal _ => []
+  | Gate _ op inputs => 
+      if is_bad_gate_bool g k
+      then
+        let negated_inputs := 
+          map (fun c => 
+            match c with
+            | Literal l => if literal_is_negated l 
+                          then [literal_index l] 
+                          else []
+            | _ => []
+            end) inputs in
+        filter (fun l => match l with 
+                        | [] => false 
+                        | _ => true 
+                        end) negated_inputs
+      else []
+  end.
+  
 Lemma bottom_fan_in_reduction: forall (n m k l: nat) (c: Pi3_circuit l),
   computes_parity c n ->
-  k * (n + 1) >= l * (m + 1) ->  (* simplified inequality *)
+  k * (n + 1) >= l * (m + 1) ->
   exists c': Pi3_circuit k,
     is_bounded_fanin c' k /\
     computes_parity_restricted c' m.
 Proof.
+  intros n m k l c Hcomp Hbound.
+  destruct c as [g2s Hfanin].
+  
+  (* We need to first map bad_gates_inputs k over g2s, then flatten *)
+  set (F := concat (map (bad_gates_inputs k) g2s)).
+  
+  (* Now continue with proof as before *)
+  assert (exists T: list nat, 
+    length T <= n - m /\
+    forall X, In X F -> exists i, In i T /\ In i X).
+  {
+    (* Greedy argument here *)
+    admit.
+  }
+  destruct H as [T [HlenT Hcover]].
 Admitted.
 
 Definition exactly_s_ones (m s: nat) : bool_string -> Prop :=

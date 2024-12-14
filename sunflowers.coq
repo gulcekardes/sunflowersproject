@@ -1056,7 +1056,7 @@ Proof.
   (* Get evaluation for x *)
 Admitted.
 
-(* If a circuit separates A,B then (A,B) can't have property P+(k,ℓ) *)
+(* If a circuit separates A,B then (A,B) can't have property Pplus(k,l) *)
 Lemma circuit_separation_p_plus: forall m k l A B (c: Pi3_circuit l),
   (forall x, A x -> eval_Pi3 c x = true) ->
   (forall x, B x -> eval_Pi3 c x = false) ->

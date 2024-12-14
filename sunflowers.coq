@@ -69,20 +69,6 @@ Definition gate_type_to_string (g: gate_type) : string :=
   | OR_gate => " ∨ "
   end.
 
-(* Convert AC0 circuit to string *)
-(* Fixpoint AC0_to_string {d: nat} (c: AC0_circuit d) : string :=
-  match c with
-  | Literal l => literal_to_string l
-  | Gate _ op [] => ""
-  | Gate _ op [c1] => AC0_to_string c1
-  | Gate _ op (c1 :: cs) => 
-      let rest := fold_right (fun c' acc => 
-                    gate_type_to_string op ++ AC0_to_string c' ++ acc
-                 ) "" cs in
-      "(" ++ AC0_to_string c1 ++ rest ++ ")"
-  end. *)
-
-
 (* Boolean strings - inputs to circuits *)
 Definition bool_string := nat -> bool.
 

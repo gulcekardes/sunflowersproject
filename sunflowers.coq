@@ -105,7 +105,6 @@ Fixpoint eval_AC0 {d: nat} (c: AC0_circuit d) (input: bool_string) : bool :=
 
 (* === Circuit Size Definitions === *)
 
-(* Size of an AC0 circuit counts total number of gates and literals *)
 Fixpoint AC0_size {d: nat} (c: AC0_circuit d) : nat :=
   match c with
   | Literal _ => 1  (* Each literal counts as 1 *)
@@ -113,7 +112,6 @@ Fixpoint AC0_size {d: nat} (c: AC0_circuit d) : nat :=
       fold_left (fun acc c' => acc + AC0_size c') inputs 0
   end.
 
-(* Count number of gates in circuit. *)
 Fixpoint gate_count {d: nat} (c: AC0_circuit d) : nat :=
   match c with
   | Literal _ => 0  (* Literals don't count as gates *)
@@ -128,7 +126,6 @@ Definition gate_type_eq (g1 g2: gate_type) : bool :=
   | _, _ => false
   end.
 
-(* Count number of each gate type. *)
 Fixpoint gate_type_count {d: nat} (c: AC0_circuit d) (gt: gate_type) : nat :=
   match c with 
   | Literal _ => 0

@@ -2,11 +2,7 @@
 
 # Top-Down Circuit Bounds Formalization
 
-This repository contains a first step towardsthe Coq formalization of the paper "Top-Down Lower Bounds for Depth-Three Circuits" by Håstad, Jukna & Pudlák (1995). The formalization focuses on proving lower bounds for depth-3 boolean circuits computing functions like parity and majority.
-
-## Collaboration Invitation
-
-If you're interested in helping complete this formalization, please reach out.
+This repository contains a first step towards the Coq formalization of the paper "Top-Down Lower Bounds for Depth-Three Circuits" by Håstad, Jukna & Pudlák (1995). 
 
 ## Overview
 
@@ -14,7 +10,7 @@ The code formalizes several key concepts from circuit complexity theory:
 
 - AC0 circuits with bounded depth
 - k-limits and sunflowers used in lower bound proofs
-- The Erdős-Rado sunflower theorem (incomplete - made significant process towards completing it in December 2024)
+- The Erdős-Rado sunflower theorem (incomplete - made significant process towards completing it, December 2024)
 - Boolean function evaluation and circuit separation properties
 
 ## Key Definitions

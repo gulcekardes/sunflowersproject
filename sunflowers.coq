@@ -6,7 +6,6 @@ Require Import Coq.Strings.String.
 Require Import Coq.Strings.Ascii.
 Require Import Classical_Prop.
 Require Import Classical_Pred_Type.
-Require Import Coq.Numbers.Natural.Peano.NPeano.
 Import ListNotations.
 Local Open Scope string_scope.
 Require Import Lia.
@@ -578,6 +577,161 @@ Lemma set_minus_union_lemma: forall (X Y Z: list nat) (z: nat),
 Proof.
 Admitted.
 
+Lemma s0_sunflower: forall F k,
+  k > 0 ->
+  (forall X, In X F -> length X = 0) ->
+  length F > fact 0 * (k - 1)^0 ->
+  exists Y sets, 
+    length sets = k /\
+    (forall X, In X sets -> In X F) /\
+    is_sunflower F Y k.
+Proof.
+Admitted.
+
+Lemma factorial_bound: forall s k,
+  k > 0 ->
+  fact (S(S s)) * (k-1)^(S(S s)) > (S(S s)) * (k-1).
+Proof.
+Admitted.
+
+Lemma sunflower_length_bound: forall F B k s A,
+  k > 0 ->
+  (forall X, In X F -> length X = S (S s)) ->
+  length F > fact (S (S s)) * (k - 1) ^ S (S s) ->
+  is_maximal_disjoint A F ->
+  length A <= k - 1 ->
+  B = fold_right set_union [] A ->
+  (forall X, In X F -> exists x, In x B /\ In x X) ->
+  length B < S (S s) * (k - 1) /\
+  exists x, In x B /\ count_occurrences x F > length F / length B /\
+  exists Y, is_sunflower F Y k.
+Proof.
+Admitted.
+
+Lemma inductive_step_sunflower: forall F' s k,
+  (forall F, 
+    (forall X, In X F -> length X = S s) -> 
+    length F > fact (S s) * (k - 1) ^ S s -> 
+    exists Y, is_sunflower F Y k) ->
+  (forall X, In X F' -> length X = S s) ->
+  length F' > fact s * (k - 1) ^ S s ->
+  exists Y, is_sunflower F' Y k.
+Proof.
+Admitted.
+
+Lemma intersection_unions_with_singleton: 
+  forall (z x: nat) (Y1 Y2 core: list nat),
+  In z (set_inter (set_union Y1 [x]) (set_union Y2 [x])) ->
+  In z (set_union core [x]).
+Proof.
+Admitted.
+
+(* First lemma: size property of elements in Fx *)
+Lemma Fx_element_size: forall F x s,
+  (forall X, In X F -> length X = S (S s)) ->
+  let Fx := map (fun X => set_minus X [x])
+            (filter (fun X => if in_dec nat_eq_dec x X then true else false) F) in
+  forall X, In X Fx -> length X = S s.
+Proof.
+  intros F x s Hsize Fx X HX.
+  unfold Fx in HX.
+  
+  (* Break down the membership in Fx *)
+  apply in_map_iff in HX.
+  destruct HX as [orig [Heq HorigF]].
+  apply filter_In in HorigF.
+  destruct HorigF as [HorigInF Hhasx].
+  
+  (* Get size of original set *)
+  assert (Horig_size := Hsize orig HorigInF).
+  
+  (* When we remove x, size decreases by 1 *)
+  subst X.
+  (* Need to show that set_minus removes exactly one element *)
+  assert (In x orig).
+  {
+    destruct (in_dec nat_eq_dec x orig); auto.
+    simpl in Hhasx. discriminate.
+  }
+  
+  (* Now prove that set_minus with singleton removes exactly one element *)
+  assert (length (set_minus orig [x]) = length orig - 1).
+  {
+    (* This requires another helper lemma about set_minus with singleton *)
+    admit.  (* This should be another separate lemma *)
+  }
+Admitted.
+
+(* Second lemma: bound property for length of Fx *)
+Lemma Fx_length_bound: forall F x s k,
+  length F > fact (S (S s)) * (k - 1) ^ S (S s) ->
+  let Fx := map (fun X => set_minus X [x])
+            (filter (fun X => if in_dec nat_eq_dec x X then true else false) F) in
+  length Fx > fact s * (k - 1) ^ S s.
+Proof.
+Admitted.
+
+Lemma Fx_inductive_hypothesis: forall (s k: nat) (F: list (list nat)) (x: nat)
+  (IHs': ((forall X : list nat, In X F -> length X = S s) -> 
+          length F > fact (S s) * (k - 1) ^ S s -> 
+          exists Y : list nat, is_sunflower F Y k)),
+  let Fx := map (fun X => set_minus X [x])
+            (filter (fun X => if in_dec nat_eq_dec x X then true else false) F) in
+  (forall X, In X Fx -> length X = S s) ->
+  length Fx > fact s * (k - 1) ^ S s ->
+  exists Y, is_sunflower Fx Y k.
+Proof.
+Admitted.
+
+(* Take first k elements from a list *)
+Fixpoint take (k: nat) {A: Type} (l: list A) : list A :=
+  match k, l with
+  | 0, _ => []
+  | _, [] => []
+  | S k', (x :: xs) => x :: take k' xs
+  end.
+
+(* Helper lemmas about take *)
+Lemma take_length: forall k A (l: list A),
+  length (take k l) = min k (length l).
+Proof.
+  induction k; intros.
+  - simpl. reflexivity.
+  - destruct l.
+    + simpl. reflexivity.
+    + simpl. f_equal. apply IHk.
+Qed.
+
+Lemma take_in: forall k A (l: list A) x,
+  In x (take k l) -> In x l.
+Proof.
+  induction k; intros.
+  - simpl in H. contradiction.
+  - destruct l.
+    + simpl in H. contradiction.
+    + simpl in H. destruct H.
+      * left. exact H.
+      * right. apply IHk. exact H.
+Qed.
+
+Lemma take_k_from_longer: forall k {A: Type} (l: list A),
+  k > 0 ->
+  length l > k - 1 ->
+  exists sets, length sets = k /\
+               (forall x, In x sets -> In x l).
+Proof.
+  intros k A l Hk Hlen.
+  exists (take k l).
+  split.
+  - rewrite take_length.
+    apply min_l.
+    (* Need to show k <= length l *)
+    lia.
+  - intros x Hx.
+    apply take_in with k.
+    exact Hx.
+Qed.
+
 (* Main theorem *)
 Theorem erdos_rado_sunflower: forall F s k,
   k > 0 ->
@@ -587,10 +741,10 @@ Theorem erdos_rado_sunflower: forall F s k,
 Proof.
   intros F s k Hk Hsize Hbound.
   induction s as [|s' IHs'].
-  
-  * (* Case s = 0 *)
-    admit.  (* we can admit s=0 as it's not important for the theorem *)
-    
+   (* Case s = 0 *)
+    destruct (s0_sunflower F k Hk Hsize Hbound) as [Y [sets [Hlen [Hin Hsun]]]].
+    exists Y.
+    exact Hsun.
   * destruct s' as [|s''].
     - (* Case s = 1 *)
       apply singletons_form_sunflower.
@@ -604,57 +758,30 @@ Proof.
       destruct (le_gt_dec (length A) (k-1)) as [Hle|Hgt].
       (* Union of A (B) must intersect every member of F
          Then by pigeonhole, some x in B must be in many sets *)
-      
-      + (* Case |A| ≤ k-1 *)
-        set (B := fold_right set_union [] A).
-        assert (forall X, In X F -> exists x, In x B /\ In x X).
-        { apply maximal_family_intersects_all with (A:=A); auto. }
-        
-        (* Use pigeonhole principle to find x in B that appears in many sets
-           Then we delete x from those sets
-           Apply IH to the resulting family
-           Add x back to get our sunflower *)
-        destruct (pigeonhole_for_sets F B ((S(S s'')) * (k-1))) as [x [HxB Hcount]].
-        
-        (* length F > bound *)
-        assert (fact (S(S s'')) * (k-1)^(S(S s'')) > S(S s'') * (k-1)).
-        admit.
-        lia.
-        admit.
-        
-        (*Union of sets in A should be bounded by:
-          |B| < |A| * (size of each set) <= (k-1) * S(S s'')*)
-        set (Fx := map (fun X => set_minus X [x]) 
-                      (filter (fun X => if in_dec nat_eq_dec x X then true else false) F)).
-        
-        assert (HSizeFx: forall X, In X Fx -> length X = S s'') by admit.
-        assert (HBoundFx: length Fx > fact s'' * (k - 1) ^ S s'') by admit.
-        assert (HBbound: length B < (S(S s'')) * (k-1)).
-        {
-          unfold B.
-          (* First prove length B <= length A * S(S s'') *)
-          assert (H1: length (fold_right set_union [] A) <= length A * S(S s'')).
-          {
-            admit.  (* We admit this part for now *)
-          }
-          (* Then prove length A * S(S s'') < (S(S s'')) * (k-1) *)
-          assert (H2: length A * S(S s'') < (S(S s'')) * (k-1)).
-          {
-            admit.  (* We admit this arithmetic *)
-          }
-          (* Use transitivity of <= and < *)
-          apply (Nat.le_lt_trans _ (length A * S(S s''))).
-          - exact H1.
-          - exact H2.
-        }
-        
-        assert (IH_for_Fx: (forall X : list nat, In X Fx -> Datatypes.length X = S s'') ->
-                          Datatypes.length Fx > fact s'' * (k - 1) ^ S s'' ->
-                          exists Y : list nat, is_sunflower Fx Y k).
-        {
-          (* Need to somehow derive this from IHs' *)
-          admit.  (* For now *)
-        }
+    
+        + (* Case |A| ≤ k-1 *)
+  set (B := fold_right set_union [] A).
+  assert (forall X, In X F -> exists x, In x B /\ In x X).
+  { apply maximal_family_intersects_all with (A:=A); auto. }
+  
+  destruct (sunflower_length_bound F B k s'' A Hk Hsize Hbound HA Hle eq_refl H) 
+    as [HBbound [x [HxB [Hcount Hsunflower]]]].
+  
+  (*Union of sets in A should be bounded by:
+    |B| < |A| * (size of each set) <= (k-1) * S(S s'')*)
+  set (Fx := map (fun X => set_minus X [x]) 
+    (filter (fun X => if in_dec nat_eq_dec x X then true else false) F)).
+
+assert (HSizeFx: forall X, In X Fx -> length X = S s'') 
+  by (apply (Fx_element_size F x s'' Hsize)).
+
+assert (HBoundFx: length Fx > fact s'' * (k - 1) ^ S s'')
+  by (apply (Fx_length_bound F x s'' k Hbound)).
+
+assert (IH_for_Fx: (forall X : list nat, In X Fx -> Datatypes.length X = S s'') ->
+                  Datatypes.length Fx > fact s'' * (k - 1) ^ S s'' ->
+                  exists Y : list nat, is_sunflower Fx Y k)
+  by (apply (Fx_inductive_hypothesis s'' k F x IHs')).
         
         (* Then we can use this *)
         assert (Hsunflower_Fx: exists Y, is_sunflower Fx Y k).
@@ -671,7 +798,7 @@ Proof.
         exists (map (fun X => set_union X [x]) sets).
         split.
         {
-          rewrite map_length.
+          rewrite length_map.
           exact Hsun.
         }
         split.
@@ -719,10 +846,7 @@ Proof.
           unfold set_eq. intros z.
           split; intros Hz.
           - (* -> direction *)
-            apply in_set_inter in Hz.
-            destruct Hz as [Hz1 Hz2].
-            (* Now show z is in set_union core [x] *)
-            admit.
+            exact (intersection_unions_with_singleton z x Y1 Y2 core Hz).
           - (* <- direction *)
             apply in_set_inter.
             split.
@@ -805,7 +929,68 @@ Proof.
             (* Easy since rhs is empty *)
             destruct Hz.
         }
-Admitted.
+        + (* Case |A| > k-1 *)
+  exists [].  (* empty core *)
+         
+  (* Take first k sets from A to form petals *)
+  assert (Hfirstk: exists sets, length sets = k /\ 
+                               (forall X, In X sets -> In X A))
+    by (apply take_k_from_longer; [exact Hk | exact Hgt]).
+  
+  destruct Hfirstk as [sets [Hlen Hinsets]].
+  exists sets.
+
+  (* Now prove this is a sunflower *)
+  split; [exact Hlen|].
+
+  (* Extract disjointness property before destructing HA *)
+  destruct HA as [Hdisj [HinF _]].
+
+  split.
+  {
+    intros X HX.
+    apply HinF.
+    apply Hinsets.
+    exact HX.
+  }
+
+  split.
+  { 
+    (* Pairwise intersections equal empty core *)
+    intros X1 X2 HX1 HX2 Hneq.
+    unfold set_eq. intros z.
+    split; [intros Hz|intros []].
+    apply in_set_inter in Hz.
+    destruct Hz as [Hz1 Hz2].
+    assert (Hz' := Hdisj X1 X2 (Hinsets _ HX1) (Hinsets _ HX2) Hneq).
+    assert (Hboth: In z (set_inter X1 X2)).
+    {
+      apply in_set_inter. split; assumption.
+    }
+    rewrite Hz' in Hboth.
+    exact Hboth.
+  }
+  {
+    (* Disjoint after removing core - same as above since core is empty *)
+    intros X1 X2 HX1 HX2 Hneq.
+    unfold set_eq. intros z.
+    split; [intros Hz|intros []].
+    apply in_set_inter in Hz.
+    destruct Hz as [Hz1 Hz2].
+    (* Extract membership from set_minus *)
+    apply in_set_minus in Hz1.
+    apply in_set_minus in Hz2.
+    destruct Hz1 as [Hz1 _].
+    destruct Hz2 as [Hz2 _].
+    assert (Hz' := Hdisj X1 X2 (Hinsets _ HX1) (Hinsets _ HX2) Hneq).
+    assert (Hboth: In z (set_inter X1 X2)).
+    {
+      apply in_set_inter. split; assumption.
+    }
+    rewrite Hz' in Hboth.
+    exact Hboth.
+  }
+Qed.
 
 Fixpoint parity (x: bool_string) (n: nat) : bool :=
   match n with

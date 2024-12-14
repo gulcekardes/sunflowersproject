@@ -199,12 +199,14 @@ Definition pairwise_disjoint (F: list (list nat)) : Prop :=
     set_inter A B = nil.
 
 (* Now we will go for “tau”,
-the minimum cardinality of a cover in a set family. *)
+the minimum cardinality of a cover in a set family. 
+This prepares for Lemma 2.2. of HJP paper. *)
 
 (* For defining cover, consider the following.
 For every set X in F, there must exist some number i that is:
 In C (In i C) AND
 In X (In i X) *)
+
 Definition is_cover (C: list nat) (F: list (list nat)) : Prop :=
   forall X, In X F -> exists i, In i C /\ In i X.
 

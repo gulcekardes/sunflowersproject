@@ -13,28 +13,12 @@ The code formalizes several key concepts from circuit complexity theory:
 - The Erdős-Rado sunflower theorem (incomplete - made significant process towards completing it, December 2024)
 - Boolean function evaluation and circuit separation properties
 
-## Key Definitions
-
-### Circuit Types
-```coq
-Inductive AC0_circuit : nat -> Type :=
-  | Literal (l: literal) : AC0_circuit 0  
-  | Gate (d: nat) (op: gate_type) (inputs: list (AC0_circuit d)) : AC0_circuit (S d)
-```
-
-### Boolean Functions and Properties
-```coq
-Definition parity (x: bool_string) (n: nat) : bool
-Definition is_k_limit (y: bool_string) (B: bool_string -> Prop) (n k: nat) : Prop
-Definition is_sunflower (F: list (list nat)) (Y: list nat) (h: nat) : Prop
-```
-
 ## Main Theorems
 
 The formalization works toward proving several key results:
 
 1. **Circuit Separation (Lemma 2.2)**: Shows relationship between k-limits and circuit separation
-2. **Sunflower Theorem**: Formalizes Erdős-Rado sunflower theorem for set systems
+2. **Sunflower Theorem**: Erdős-Rado sunflower theorem for set systems
 3. **Parity Lower Bound**: Exponential lower bound for computing parity
 4. **Fan-in Reduction**: Deterministic technique for reducing bottom fan-in of circuits
 

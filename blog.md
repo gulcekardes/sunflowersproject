@@ -21,4 +21,4 @@ My focus in this project has been on implementing a breakthrough from a 1995 pap
 
 <p> Several auxiliary lemmas in the proof of the sunflower theorem remain admitted, and this is where you might come in. I welcome collaboration on completing these remaining pieces. Meanwhile, I'll be using pen and paper to explore some other combinatorial structures and how they might be intertwined with circuits. </p>
 
-[1] Håstad, J., Jukna, S. & Pudlák, P. Top-down lower bounds for depth-three circuits. <em>Comput Complexity<\em> 5, 99–112 (1995). https://doi.org/10.1007/BF01268140
+[1] Håstad, J., Jukna, S. & Pudlák, P. Top-down lower bounds for depth-three circuits. <em>Comput Complexity</em> 5, 99–112 (1995). https://doi.org/10.1007/BF01268140

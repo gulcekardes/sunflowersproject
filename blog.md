@@ -1,7 +1,7 @@
 # Sunflowers and $$\mathsf{AC}^0$$ circuits
 
 <p> Recently, I worked on an exciting formalization project that bridges combinatorics and computational complexity via an elegant use of the Erdős-Rado Sunflower Theorem from 1960.
-My focus in this project has been on implementing a breakthrough from a 1995 paper by [Håstad, Jukna, and Pudlák](https://link.springer.com/article/10.1007/BF01268140). </p>
+My focus in this project has been on implementing a breakthrough from a 1995 paper by Håstad, Jukna, and Pudlák [1]. </p>
  
 <p> This work introduced a novel "top-down" technique that uses sunflower structures to establish lower bounds on circuit complexity. The innovation lies in the use of "limit vectors" that force small circuits to make mistakes, whose existence we can prove via the existence of ("parity") sunflowers in the hypercube. By showing the existence of such sunflowers, the authors proved that depth-3 $$\mathsf{AC}^0$$ circuits (poly-size, constant-depth, unbounded fan-in boolean circuit using $$\mathsf{AND}$$, $$\mathsf{OR}$$ gates and input-level $$\mathsf{NOT}$$ gates, arranged in alternating levels where each level consists entirely of one gate type, $$\mathsf{AND}$$ or $$\mathsf{OR}$$) computing parity require size at least $$2^{0.61\sqrt{n}}$$, while majority requires $$2^{0.849\sqrt{n}}$$. </p>
 
@@ -21,4 +21,4 @@ My focus in this project has been on implementing a breakthrough from a 1995 pap
 
 <p> Several auxiliary lemmas in the proof of the sunflower theorem remain admitted, and this is where you might come in. I welcome collaboration on completing these remaining pieces. Meanwhile, I'll be using pen and paper to explore some other combinatorial structures and how they might be intertwined with circuits. </p>
 
-
+[1] Håstad, J., Jukna, S. & Pudlák, P. Top-down lower bounds for depth-three circuits. <em>Comput Complexity<\em> 5, 99–112 (1995). https://doi.org/10.1007/BF01268140
